@@ -11,9 +11,16 @@ class PublicAPI(RequestMaker):
     @dealsfilter
     def deals(self, deal):
         """
-
+        Результатом данного запроса будет  список сделок
+        купли/продажи BitCoin за гривну между участниками биржи в формате
+        JSON. Например:
         :param deal: one of the DEALS (btc_uah e.g.)
-        :return: array of the objects:
+        :return: [{"amnt_base": "6.3938515000", "amnt_trade": "0.0013320524", "price": "4800.0000000000",
+        "pub_date": "2014­06­01 22:34:52", "user": "abolt", "type": "buy"}, {"amnt_base": "6.3938513300",
+        "amnt_trade": "0.0013320524", "price": "4800.0000000000", "pub_date": "2014­06­01 22:34:52", "user":
+        "baobab", "type": "sell"}]
+        Две записи массива выше показывают, что пользователь ​abolt ​купил у пользователя ​baobab 0.0013320524​ BTC, заплатив за них ​6.3938515000 ​гривны, из расчета ​4800​ гривны за один BitCoin.
+        массив  объектов, состоящих из
             amnt_base​ ­ сумма сделки в базовой валюте,
             amnt_trade ­ сумма сделки в валюте торга
             price ​ ­ цена
