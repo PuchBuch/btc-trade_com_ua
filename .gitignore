@@ -1,0 +1,5 @@
+*.exe
+*.pyc
+.env/
+Makefile
+key.bin
