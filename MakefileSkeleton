@@ -1,0 +1,87 @@
+.PHONY: all
+
+REQFILE=requirements.txt
+TESTDUMMY=tests/test_dummy.py
+GITATTRIBUTES=.gitattributes
+GITIGNORE=.gitignore
+KEY=key.bin
+ZIPPEDKEY=key.zip
+
+all: test
+		@echo
+
+test:
+		@echo "Checking"
+
+gitinit:
+		git init
+		touch $(GITIGNORE)
+		echo "*.exe" >> $(GITIGNORE)
+		echo "*.pyc" >> $(GITIGNORE)
+		echo ".env/" >> $(GITIGNORE)
+		echo "Makefile" >> $(GITIGNORE)
+		echo "$(KEY)" >> $(GITIGNORE)
+		git add $(GITIGNORE)
+
+gitcryptinit:
+		touch $(GITATTRIBUTES)
+		git-crypt keygen $(KEY)
+		@echo "*.sec filter=git-crypt diff=git-crypt" >> $(GITATTRIBUTES)
+		git add $(GITATTRIBUTES)
+		zip -1 -e $(ZIPPEDKEY) $(KEY)
+		git add $(ZIPPEDKEY)
+		git commit -am "initial commit"
+		git-crypt init $(KEY)
+
+gitctyptinitcloned:
+		unzip $(ZIPPEDKEY)
+		git-ctypt init $(KEY)
+
+pythoninit:
+		python -m virtualenv --no-site-packages -p `which python` .env
+
+pythoninstallreq:
+		pip install -r $(REQFILE)
+
+genprojectstructure: gentests genrequirements
+
+genrequirements:
+		truncate --size 0 $(REQFILE)
+		@echo "unittest2" > $(REQFILE)
+		@echo "mock" >> $(REQFILE)
+		@echo "requests" >> $(REQFILE)
+		@echo "bottle" >> $(REQFILE)
+		@echo "sphinx" >> $(REQFILE)
+		git add $(REQFILE)
+
+gentests:
+		mkdir -p tests
+		truncate --size 0 $(TESTDUMMY)
+		@echo "import unittest2" > $(TESTDUMMY)
+
+		@echo "class TestStringMethods(unittest2.TestCase):" >> $(TESTDUMMY)
+
+		@echo "  def test_upper(self):" >> $(TESTDUMMY)
+		@echo "      self.assertEqual('foo'.upper(), 'FOO')" >> $(TESTDUMMY)
+
+		@echo "  def test_isupper(self):" >> $(TESTDUMMY)
+		@echo "      self.assertTrue('FOO'.isupper())" >> $(TESTDUMMY)
+		@echo "      self.assertFalse('Foo'.isupper())" >> $(TESTDUMMY)
+
+		@echo "  def test_split(self):" >> $(TESTDUMMY)
+		@echo "      s = 'hello world'" >> $(TESTDUMMY)
+		@echo "      self.assertEqual(s.split(), ['hello', 'world'])" >> $(TESTDUMMY)
+		@echo "      # check that s.split fails when the separator is not a string" >> $(TESTDUMMY)
+		@echo "      with self.assertRaises(TypeError):" >> $(TESTDUMMY)
+		@echo "          s.split(2)" >> $(TESTDUMMY)
+		@echo "if __name__ == '__main__':" >> $(TESTDUMMY)
+		@echo "    unittest2.main()" >> $(TESTDUMMY)
+
+		git add tests
+
+runtest:
+		unit2 discover -s tests/
+
+createpyproject: gitinit genprojectstructure gitcryptinit pythoninit
+
+initpyproject: gitctyptinitcloned

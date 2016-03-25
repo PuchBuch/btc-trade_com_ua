@@ -1,5 +1,6 @@
 *.exe
 *.pyc
 .env/
+.idea/
 Makefile
 key.bin
