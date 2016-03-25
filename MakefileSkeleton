@@ -1,7 +1,7 @@
 .PHONY: all
 
 REQFILE=requirements.txt
-TESTDUMMY=tests/test_dummy.py
+TESTDUMMY=test/test_dummy.py
 GITATTRIBUTES=.gitattributes
 GITIGNORE=.gitignore
 KEY=key.bin
@@ -80,7 +80,7 @@ gentests:
 		git add tests
 
 runtest:
-		unit2 discover -s tests/
+		python -m unittest2 discover test
 
 createpyproject: gitinit genprojectstructure gitcryptinit pythoninit
 
