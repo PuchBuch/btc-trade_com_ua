@@ -11,3 +11,11 @@ def dealsfilter(func):
             raise UnknownDeal
         return func(classinstance, deal, *args, **kwargs)
     return wrapper
+
+def autoordered(func):
+    @wraps(func)
+    def wrapper(classinstance, deal, *args, **kwargs):
+        if 'order' not in kwargs:
+            kwargs.update(order=1)
+        return func(classinstance, deal, *args, **kwargs)
+    return wrapper
