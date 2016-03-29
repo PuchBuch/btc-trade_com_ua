@@ -340,3 +340,96 @@ class PrivateAPI(RequestMaker):
         :return:
         """
         return self.makepost('/order/remove/%s' % order_id, out_order_id=order, nonce=nonce)
+
+    @dealsfilter
+    @checknonce
+    def get_cost_of_buying(self, deal, amount, order=None, nonce=None):
+        """
+        Получение стоимости покупки 1 коина
+
+        Этот поможет узнать сколько будет стоить покупка одного коина в базовой валюте. Возьмем для примера bitcoin
+
+            https://btc-trade.com.ua/api/ask/btc_uah
+        С POST параметрами
+        out_order_id:  59
+        amount:1.01
+        nonce: 17
+
+        Где :
+                   nonce - целочисленней инкремент
+        Out_order_id - внешний идентификатор, принимающий произвольное значение
+        Amount - количество монет желаемой покупки
+
+        И HTTP загаловками :
+            api-sign - хеш сумма SHA256, сформированная от тела POST запроса с добавлением приватного ключа в конце, например  :
+
+        nonce=17&out_order_id=58&amount=1.01$privat_key
+
+            $privat_key - ваш приватный ключ
+            public-key - публичный ключ
+
+         В случае успеха ответом будет JSON объект вида :
+
+        {"status": true, "avarage_price": "6500.0000000000", "min_price": "6500.0000000000", "buy_sum": "1.0000000000", "max_price": "6500.0000000000", "amount2pay": "6500.0000000000"}
+
+        status - результат запроса true или false
+        avarage_price - средняя цена покупки
+        min_price - минимальная цена в выборке
+        max_price - максимальная цена в выборке
+        amount2pay - сумма к оплате в базовой валюте
+        buy_sum - сумма покупки
+
+        :param deal:
+        :param amount:
+        :param order:
+        :param nonce:
+        :return:
+        """
+        return self.makepost('/ask/%s' % deal, amount=amount, out_order_id=order, nonce=nonce)
+
+    @dealsfilter
+    @checknonce
+    def get_cost_of_selling(self, deal, amount, order=None, nonce=None):
+        """
+        Получение стоимости продажи 1 коина
+
+        Этот поможет узнать сколько будет стоить продажа одного коина в базовой валюте. Возьмем для примера bitcoin:
+
+            https://btc-trade.com.ua/api/bid/btc_uah
+
+        С POST параметрами
+        out_order_id:  59
+        amount:1.01
+        nonce: 18
+
+        Где :
+            nonce - целочисленней инкремент
+        Out_order_id - внешний идентификатор, принимающий произвольное значение
+        Amount - количество монет желаемой продажи
+
+        И HTTP загаловками :
+            api-sign - хеш сумма SHA256, сформированная от тела POST запроса с добавлением приватного ключа в конце, например  :
+
+        out_order_id=58&amount=1.01&nonce=18$privat_key
+
+            $privat_key - ваш приватный ключ
+            public-key - публичный ключ
+
+         В случае успеха ответом будет JSON объект вида :
+
+        {"status": true, "avarage_price": "6300.0000000000", "min_price": "6300.0000000000", "buy_sum": "6300.0000000000", "max_price": "6300.0000000000", "amount2pay": "1.0000000000"}
+
+        status - результат запроса true или false
+        avarage_price - средняя цена продажи из расчета за одну монету
+        min_price - минимальная цена в выборке заявок
+        max_price - максимальная цена в выборке заявок
+        amount2pay - сумма продажи в  валюте торга
+        buy_sum - сумма вырученная за сделку
+
+        :param deal:
+        :param amount:
+        :param order:
+        :param nonce:
+        :return:
+        """
+        return self.makepost('/bid/%s' % deal, amount=amount, out_order_id=order, nonce=nonce)

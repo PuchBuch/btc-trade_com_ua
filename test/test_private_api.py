@@ -46,3 +46,11 @@ class TestPrivateAPI(unittest2.TestCase):
         remove_order = self.api.remove_order(1)
         self.assertIn('status', remove_order.keys())
 
+    def test_get_cost_of_buying(self):
+        cost_of_buying_btc = self.api.get_cost_of_buying(DEALS.btc_uah, amount=1)
+        self.assertEqual(cost_of_buying_btc['status'], True)
+
+    def test_get_cost_of_selling(self):
+        cost_of_selling_btc = self.api.get_cost_of_selling(DEALS.btc_uah, amount=1)
+        self.assertEqual(cost_of_selling_btc['status'], True)
+
