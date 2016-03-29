@@ -31,3 +31,4 @@ class TestPrivateAPI(unittest2.TestCase):
         buy_doge_with_uah = self.api.buy(currency_from='UAH', currency_to='DOGE', count=10, price=0.0056)
         self.assertEqual(buy_doge_with_uah['status'], "processed")
 
+

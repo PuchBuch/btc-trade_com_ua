@@ -2,6 +2,7 @@
 
 import json
 import hashlib
+import time
 
 import requests
 
@@ -22,6 +23,7 @@ class PrivateAPI(RequestMaker):
         #TODO: fix multithreading resources race
         self.nonce = 1
         self.order = 1
+        self.timespace = 5
 
     def makepost(self, url, **params):
         params.update(nonce=self.nonce, out_order_id=self.order)
@@ -32,9 +34,10 @@ class PrivateAPI(RequestMaker):
         req.headers['api-sign'] = hashlib.sha256(
             "%s%s" % (req.body, self.privkey)).hexdigest()
         req.headers['public-key'] = self.pubkey
+        time.sleep(self.timespace)
         response = self.session.send(req)
         #import ipdb; ipdb.set_trace()
-        #print req.url, req.body, req.headers, response.content
+        print "url = '%s'\nPOST body='%s'\nHeaders = '%s'\nResponse: '%s'" % (req.url, req.body, req.headers, response.content)
         if response.status_code != 200:
             import ipdb; ipdb.set_trace()
             raise ConnectionError
@@ -125,6 +128,7 @@ class PrivateAPI(RequestMaker):
             raise ImpossibleDeal()
         if not order:
             order = self.order
+        #time.sleep(self.timespace)
         return self.makepost('/sell/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count)
 
     def buy(self, currency_from, currency_to, count, price, order=None):
@@ -176,4 +180,5 @@ class PrivateAPI(RequestMaker):
             raise ImpossibleDeal()
         if not order:
             order = self.order
+        #time.sleep(self.timespace)
         return self.makepost('/buy/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count)
