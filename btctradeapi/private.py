@@ -182,3 +182,59 @@ class PrivateAPI(RequestMaker):
             order = self.order
         #time.sleep(self.timespace)
         return self.makepost('/buy/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count)
+
+    @dealsfilter
+    def opened_orders(self, deal):
+        """
+        Получение списка открытых заявок
+
+             Для провеки статуса выполнения заявок необходимо сформировать запрос на url, в данном случае по валютной паре BTC/UAH :
+            https://btc-trade.com.ua/api/my_orders/btc_uah
+        С POST параметрами
+        out_order_id:  58
+        nonce: 12
+
+        Где :
+            nonce - целочисленней инкремент
+        Out_order_id - внешний идентификатор, принимающий произвольное значение
+
+        И HTTP загаловками :
+            api-sign - хеш сумма SHA256, сформированная от тела POST запроса с добавлением приватного ключа в конце, например:
+
+        out_order_id=58&nonce=12$privat_key
+
+            $privat_key - ваш приватный  ключ
+            public-key - публичный ключ
+
+         В случае успеха ответом будет JSON объект вида :
+        {"your_open_orders": [
+            {
+                "amnt_base": "1538.2358440000",
+                "pub_date": "Oct. 18, 2014, 7:40 p.m.",
+                "price": "5400.0000000000",
+                "sum2": "1538.2358440000",
+                "sum1": "0.2848584896",
+                "amnt_trade": "0.2848584896",
+                "type": "sell",
+                "id": 4624
+            },
+            {"amnt_base": "1159.4200000000", "pub_date": "Oct. 14, 2014, 8:57 p.m.", "price": "5800.0000000000",
+                "sum2": "1159.4200000000", "sum1": "0.1999000000", "amnt_trade": "0.1999000000", "type": "sell", "id": 4405},
+            {"amnt_base": "1258.3137610000", "pub_date": "Oct. 10, 2014, 9:18 p.m.", "price": "6200.0000000000",
+                "sum2": "1258.3137610000", "sum1": "0.2029538324", "amnt_trade": "0.2029538324", "type": "sell", "id": 4052}
+        ],
+            "balance_buy": "0.0000396100",
+            "auth": true,
+            "balance_sell": "0.0000000000"
+        }
+
+        Поле your_open_orders содержит  список ваших открытых заявок на покупку/продажу.
+        id - идентификатор заявки
+        type - типа покупка - buy, продажа - sell
+        amnt_trade - сумма в валюте торга
+        amnt_base - сумма в базовой валюте
+        price - цена из расчета за одну единицу валюты торга
+
+        :return:
+        """
+        return self.makepost('/my_orders/%s' % deal)

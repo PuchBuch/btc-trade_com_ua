@@ -31,4 +31,7 @@ class TestPrivateAPI(unittest2.TestCase):
         buy_doge_with_uah = self.api.buy(currency_from='UAH', currency_to='DOGE', count=10, price=0.0056)
         self.assertEqual(buy_doge_with_uah['status'], "processed")
 
+    def test_opened_orders(self):
+        doge_uah_opened_orders_list = self.api.opened_orders('doge_uah')
+        self.assertIsInstance(doge_uah_opened_orders_list['your_open_orders'], list)
 
