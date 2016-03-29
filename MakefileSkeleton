@@ -1,5 +1,8 @@
 .PHONY: all
 
+# https://gist.github.com/kostyll/e1bba8506c2cb08352fc
+# install git-crypt from https://github.com/AGWA/git-crypt.git
+
 REQFILE=requirements.txt
 TESTDUMMY=test/test_dummy.py
 GITATTRIBUTES=.gitattributes
@@ -33,9 +36,9 @@ gitcryptinit:
 		git commit -am "initial commit"
 		git-crypt init $(KEY)
 
-gitctyptinitcloned:
+gitcryptinitcloned:
 		unzip $(ZIPPEDKEY)
-		git-ctypt init $(KEY)
+		git-crypt init $(KEY)
 
 pythoninit:
 		python -m virtualenv --no-site-packages -p `which python` .env
@@ -55,7 +58,7 @@ genrequirements:
 		git add $(REQFILE)
 
 gentests:
-		mkdir -p tests
+		mkdir -p test
 		truncate --size 0 $(TESTDUMMY)
 		@echo "import unittest2" > $(TESTDUMMY)
 
@@ -77,7 +80,7 @@ gentests:
 		@echo "if __name__ == '__main__':" >> $(TESTDUMMY)
 		@echo "    unittest2.main()" >> $(TESTDUMMY)
 
-		git add tests
+		git add test
 
 runtest:
 		python -m unittest2 discover test
