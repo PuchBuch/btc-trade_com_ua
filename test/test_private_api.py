@@ -1,4 +1,5 @@
 import unittest2
+from unittest2 import SkipTest
 import json
 
 import btctradeapi
@@ -23,6 +24,7 @@ class TestPrivateAPI(unittest2.TestCase):
         self.assertIn('msg_count', balance_result.keys())
         self.assertIn('accounts', balance_result.keys())
 
+    @unittest2.skip('waiting for answer in support')
     def test_sell(self):
         sell_uah_to_doge = self.api.sell(currency_from='DOGE', currency_to='UAH', count=10, price=0.0051)
         self.assertEquals(sell_uah_to_doge['status'], True)
@@ -39,4 +41,8 @@ class TestPrivateAPI(unittest2.TestCase):
         order_status = self.api.order_status(1)
         self.assertIn('status', order_status.keys())
 
+    @unittest2.skip('waiting for answer in support')
+    def test_remove_order(self):
+        remove_order = self.api.remove_order(1)
+        self.assertIn('status', remove_order.keys())
 

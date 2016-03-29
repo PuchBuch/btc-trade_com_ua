@@ -26,9 +26,13 @@ class PrivateAPI(RequestMaker):
         self.timespace = 5
 
     def makepost(self, url, **params):
-        params.update(nonce=self.nonce, out_order_id=self.order)
-        self.nonce += 1
-        self.order += 1
+        if params.get('out_order_id', None) is None:
+            params.update(out_order_id=self.order)
+            self.order += 1
+        if params.get('nonce', None) is None:
+            params.update(nonce=self.nonce)
+            self.nonce += 1
+
         req = requests.Request('POST', url=self.base_api_url+url, data=params)
         req = req.prepare()
         req.headers['api-sign'] = hashlib.sha256(
@@ -40,12 +44,13 @@ class PrivateAPI(RequestMaker):
             #import ipdb; ipdb.set_trace()
             print "url = '%s'\nPOST body='%s'\nHeaders = '%s'\nResponse: '%s'" % (req.url, req.body, req.headers, response.content)
             return json.loads(response.content)
-        except:
+        except Exception, e:
+            print e
             #if response.status_code != 200:
             import ipdb; ipdb.set_trace()
             raise ConnectionError
 
-    def auth(self):
+    def auth(self, order=None, nonce=None):
         """
         Первый запрос для начала работы с торговым апи должен быть на url :
 
@@ -54,12 +59,14 @@ class PrivateAPI(RequestMaker):
             С POST параметром out_order_id равным произвольному значению и nonce равный целому произвольному числу. Воспользуемся командой curl :
             curl -k   -i -H "api-sign: 9925916858e6361ffb88fc0b71d763355ea979e3ac62a6acaa8fe4a8ba548abf" -H "public-key: 9e6ea26cc7314d6dea8359f8ed5de68b2b5f0ec8daa0d5eac96b86d2b44ada38"  --data "out_order_id=2&nonce=1" -v https://btc-trade.com.ua/api/auth
 
+        :param order:
+        :param nonce:
         :return:
         """
-        return self.makepost('/auth', out_order_id=1)
+        return self.makepost('/auth', out_order_id=1, nonce=nonce)
 
     @checknonce
-    def balance(self):
+    def balance(self, order=None, nonce=None):
         """
         После старта сессии, первый  запрос, который вам захочеться сделать - это наверняка проверить состояние вашего счета . Для этого необходимо cформировать POST запрос на url:
         https://btc-trade.com.ua/api/balance
@@ -76,14 +83,15 @@ class PrivateAPI(RequestMaker):
             JSON - объект с полем accounts, содержащим список счетов по каждой ваюте.
             Внимание! Параметр out_order_id является обязательным и должен быть добавлен  к каждому POST запросу. Желательно его каждый раз изменять.
 
-
+        :param order:
+        :param nonce:
         :return:
         """
 
-        return self.makepost('/balance', out_order_id=1)
+        return self.makepost('/balance', out_order_id=order, nonce=nonce)
 
     @checknonce
-    def sell(self, currency_from, currency_to, count, price, order=None):
+    def sell(self, currency_from, currency_to, count, price, order=None, nonce=None):
         """
          Для этого необходимо cформировать POST запрос на url по выбранной вами валютной паре в данном случае LiteCoin/Гривна
 
@@ -122,21 +130,22 @@ class PrivateAPI(RequestMaker):
 
             order_id - будет содержать внутренний идентификатор в системе, по которому можно будет проверить состояние вашей заявки
 
-        :param deal:
-        :param amount:
+        :param currency_from:
+        :param currency_to:
+        :param count:
+        :param price:
         :param order:
+        :param nonce:
         :return:
         """
         deal = getdeal(currency_to, currency_from)
         if not deal:
             raise ImpossibleDeal()
-        if not order:
-            order = self.order
         #time.sleep(self.timespace)
-        return self.makepost('/sell/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count)
+        return self.makepost('/sell/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count, out_order_id=order, nonce=nonce)
 
     @checknonce
-    def buy(self, currency_from, currency_to, count, price, order=None):
+    def buy(self, currency_from, currency_to, count, price, order=None, nonce=None):
         """
          Заявка покупки формируется подобным образом, только на другой  url, для пары LiteCoin/Гривна:
         https://btc-trade.com.ua/api/buy/ltc_uah
@@ -177,6 +186,7 @@ class PrivateAPI(RequestMaker):
         :param count:
         :param price:
         :param order:
+        :param nonce:
         :return:
         """
 
@@ -186,11 +196,11 @@ class PrivateAPI(RequestMaker):
         if not order:
             order = self.order
         #time.sleep(self.timespace)
-        return self.makepost('/buy/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count)
+        return self.makepost('/buy/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count, out_order_id=order, nonce=nonce)
 
     @dealsfilter
     @checknonce
-    def opened_orders(self, deal):
+    def opened_orders(self, deal, order=None, nonce=None):
         """
         Получение списка открытых заявок
 
@@ -240,13 +250,15 @@ class PrivateAPI(RequestMaker):
         amnt_trade - сумма в валюте торга
         amnt_base - сумма в базовой валюте
         price - цена из расчета за одну единицу валюты торга
-
+        :param deal:
+        :param order:
+        :param nonce:
         :return:
         """
-        return self.makepost('/my_orders/%s' % deal)
+        return self.makepost('/my_orders/%s' % deal, out_order_id=order, nonce=nonce)
 
     @checknonce
-    def order_status(self, order_id):
+    def order_status(self, order_id, order=None, nonce=None):
         """
         Проверка статуса выполнения  заявки
 
@@ -285,6 +297,46 @@ class PrivateAPI(RequestMaker):
 
 
         :param order_id:
+        :param order:
+        :param nonce:
         :return:
         """
-        return self.makepost('/order/status/%s' % order_id)
+        return self.makepost('/order/status/%s' % order_id, out_order_id=order, nonce=nonce)
+
+    @checknonce
+    def remove_order(self, order_id, order=None, nonce=None):
+        """
+        Удаление  заявки:
+
+
+        Для провеки статуса выполнения заявок необходимо сформировать запрос на url:
+        https://btc-trade.com.ua/api/order/remove/$id
+
+        С POST параметрами
+        out_order_id:  90
+        nonce: 14
+
+        Где :
+            Out_order_id - внешний идентификатор, принимающий произвольное значение
+            $id - идентификатор полученный при создании заявки
+
+        И HTTP загаловками :
+            public-key - публичный ключ
+                api-sign - хеш сумма SHA256, сформированная от тела POST запроса с добавлением приватного ключа в конце, например:
+
+            nonce=14&out_order_id=90$privat_key
+
+                $privat_key - ваш приватный ключ
+
+
+         В случае успеха ответом будет JSON объект вида :
+
+            {"status": true}
+
+        :param self:
+        :param order_id:
+        :param order:
+        :param nonce:
+        :return:
+        """
+        return self.makepost('/order/remove/%s' % order_id, out_order_id=order, nonce=nonce)
