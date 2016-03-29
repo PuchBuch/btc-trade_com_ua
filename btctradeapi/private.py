@@ -43,7 +43,11 @@ class PrivateAPI(RequestMaker):
             response = self.session.send(req)
             #import ipdb; ipdb.set_trace()
             print "url = '%s'\nPOST body='%s'\nHeaders = '%s'\nResponse: '%s'" % (req.url, req.body, req.headers, response.content)
-            return json.loads(response.content)
+            try:
+                return json.loads(response.content)
+            except Exception, e:
+                print e
+                return dict(status=False) #### WRONG WAY! !!!! TEMPORRARY FIX!
         except Exception, e:
             print e
             #if response.status_code != 200:
