@@ -35,3 +35,8 @@ class TestPrivateAPI(unittest2.TestCase):
         doge_uah_opened_orders_list = self.api.opened_orders('doge_uah')
         self.assertIsInstance(doge_uah_opened_orders_list['your_open_orders'], list)
 
+    def test_order_status(self):
+        order_status = self.api.order_status(1)
+        self.assertIn('status', order_status.keys())
+
+

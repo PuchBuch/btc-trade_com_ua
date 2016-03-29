@@ -8,7 +8,7 @@ import requests
 
 from requestmaker import RequestMaker
 from exceptions import ConnectionError, ImpossibleDeal, UnknownDeal
-from decorators import autoordered, dealsfilter
+from decorators import autoordered, dealsfilter, checknonce
 from deals import DEALS
 from utils import getdeal
 
@@ -35,13 +35,15 @@ class PrivateAPI(RequestMaker):
             "%s%s" % (req.body, self.privkey)).hexdigest()
         req.headers['public-key'] = self.pubkey
         time.sleep(self.timespace)
-        response = self.session.send(req)
-        #import ipdb; ipdb.set_trace()
-        print "url = '%s'\nPOST body='%s'\nHeaders = '%s'\nResponse: '%s'" % (req.url, req.body, req.headers, response.content)
-        if response.status_code != 200:
+        try:
+            response = self.session.send(req)
+            #import ipdb; ipdb.set_trace()
+            print "url = '%s'\nPOST body='%s'\nHeaders = '%s'\nResponse: '%s'" % (req.url, req.body, req.headers, response.content)
+            return json.loads(response.content)
+        except:
+            #if response.status_code != 200:
             import ipdb; ipdb.set_trace()
             raise ConnectionError
-        return json.loads(response.content)
 
     def auth(self):
         """
@@ -56,6 +58,7 @@ class PrivateAPI(RequestMaker):
         """
         return self.makepost('/auth', out_order_id=1)
 
+    @checknonce
     def balance(self):
         """
         После старта сессии, первый  запрос, который вам захочеться сделать - это наверняка проверить состояние вашего счета . Для этого необходимо cформировать POST запрос на url:
@@ -79,6 +82,7 @@ class PrivateAPI(RequestMaker):
 
         return self.makepost('/balance', out_order_id=1)
 
+    @checknonce
     def sell(self, currency_from, currency_to, count, price, order=None):
         """
          Для этого необходимо cформировать POST запрос на url по выбранной вами валютной паре в данном случае LiteCoin/Гривна
@@ -131,6 +135,7 @@ class PrivateAPI(RequestMaker):
         #time.sleep(self.timespace)
         return self.makepost('/sell/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count)
 
+    @checknonce
     def buy(self, currency_from, currency_to, count, price, order=None):
         """
          Заявка покупки формируется подобным образом, только на другой  url, для пары LiteCoin/Гривна:
@@ -184,6 +189,7 @@ class PrivateAPI(RequestMaker):
         return self.makepost('/buy/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count)
 
     @dealsfilter
+    @checknonce
     def opened_orders(self, deal):
         """
         Получение списка открытых заявок
@@ -238,3 +244,47 @@ class PrivateAPI(RequestMaker):
         :return:
         """
         return self.makepost('/my_orders/%s' % deal)
+
+    @checknonce
+    def order_status(self, order_id):
+        """
+        Проверка статуса выполнения  заявки
+
+
+          Для провеки статуса выполнения заявок необходимо сформировать запрос на url:
+            https://btc-trade.com.ua/api/order/status/$id
+
+        С POST параметрами
+        out_order_id:  59
+        nonce: 13
+
+        Где :
+        nonce - целочисленней инкремент
+        out_order_id - внешний идентификатор, принимающий произвольное значение
+        $id - идентификатор полученный при создании заявки
+
+        И HTTP загаловками :
+        public-key - публичный ключ
+            api-sign - хеш сумма SHA256, сформированная от тела POST запроса с добавлением приватного ключа в конце, например:
+        nonce=13&out_order_id=58$privat_key
+        $privat_key - ваш  приватный  ключ
+
+
+         В случае успеха ответом будет JSON объект вида :
+        {"status": "processing", "sum2_history": "1538.2358440000", "currency1": "BTC", "sum2": "1538.2358440000", "sum1": "0.2848584896", "currency2": "BTC", "sum1_history": "0.2848584896", "pub_date": "2014-10-18 19:40:20", "id": "4624"}
+
+        status - принимает значение processing -  в работе, processed - выполнена, canceled -  отменена
+        sum1_history - заявочная сумма продажи
+        sum2_history - заявочная сумма покупки
+        sum1 - оставшаяся сумма продажи
+        sum2 - оставшаяся сумма продажи
+        currency1 - валюта продажи
+        currency2 - валюта покупки
+        id - идентификатор заявки
+        pub_date - дата заявки
+
+
+        :param order_id:
+        :return:
+        """
+        return self.makepost('/order/status/%s' % order_id)

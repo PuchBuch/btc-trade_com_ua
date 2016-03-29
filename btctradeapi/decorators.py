@@ -19,3 +19,11 @@ def autoordered(func):
             kwargs.update(order=1)
         return func(classinstance, deal, *args, **kwargs)
     return wrapper
+
+def checknonce(func):
+    @wraps(func)
+    def wrapper(classinstance, *args, **kwargs):
+        if classinstance.nonce == 1:
+            classinstance.auth()
+        return func(classinstance, *args, **kwargs)
+    return wrapper
