@@ -74,6 +74,9 @@ reserved_words = [
 
 
 fields = {
+    'DateTime': parse_DateTime,
+    'Operation': parse_Operation,
+
     'Deal': {
         'user': str,
         'amnt_base': float,
@@ -82,9 +85,20 @@ fields = {
         'pub_date': 'DateTime',
         'type': 'Operation',
     },
-    'DateTime': parse_DateTime,
-    'Operation': parse_Operation,
     'Deals': (list, 'Deal'),
+
+    'Buyies': {
+        'min_price': float,
+        'max_price': float,
+        'orders_sum': float,
+        'list': 'BuyiesList',
+    },
+    'BuyItem': {
+        'currency_base': float,
+        'currency_trade': float,
+        'price': float,
+    },
+    'BuyiesList': (list, 'BuyItem'),
 }
 
 
@@ -117,6 +131,9 @@ def basetuple(
             for key in tuple_fields.keys():
                 rkey = key if key not in reserved_words else key+'_'
                 item = tuple_fields.get(key)
+                #if key == "list":
+                #   print item
+                #   import ipdb; ipdb.set_trace()
                 if isinstance(item, tuple) and item[0] is list:
                     listitems = []
                     for listitem in json_data[key]:
@@ -134,6 +151,12 @@ def basetuple(
                     items.update({
                         rkey: fields.get(item)(json_data.get(key))
                     })
+                elif isinstance(item, str) and isinstance(fields.get(item, None), tuple):
+                    #print key
+                    items.update({
+                        rkey: parse_list(fields.get(item)[1], json_data[key])
+                    })
+
             return cls(**items)
         setattr(newtuple, 'parse_json', classmethod(parser))
     else:
@@ -144,3 +167,6 @@ def basetuple(
 
 Deal = basetuple("Deal")
 Deals = basetuple("Deals")
+
+Buyies = basetuple("Buyies")
+Sells = basetuple("Buyies")

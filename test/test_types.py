@@ -13,3 +13,17 @@ class TestTypesParsing(unittest2.TestCase):
         result = types.Deals.parse_json(data)
         #print result
         self.assertIsInstance(result, types.Deals)
+
+    def test_Buyies(self):
+        data = json.load(open('test/data/buyies.json'))
+
+        result = types.Buyies.parse_json(data)
+        #print result
+        self.assertIsInstance(result, types.Buyies)
+
+    def test_Sells(self):
+        data = json.load(open('test/data/sells.json'))
+
+        result = types.Sells.parse_json(data)
+        print result
+        self.assertIsInstance(result, types.Sells)
