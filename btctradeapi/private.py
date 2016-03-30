@@ -2,14 +2,12 @@
 
 import json
 import hashlib
-import time
 
 import requests
 
 from requestmaker import RequestMaker
 from exceptions import ConnectionError, ImpossibleDeal, UnknownDeal
-from decorators import autoordered, dealsfilter, checknonce
-from deals import DEALS
+from decorators import dealsfilter, checknonce
 from utils import getdeal
 
 
@@ -19,11 +17,9 @@ class PrivateAPI(RequestMaker):
         super(PrivateAPI, self).__init__()
         self.pubkey = pubkey
         self.privkey = privkey
-        self.session = requests.Session()
         #TODO: fix multithreading resources race
         self.nonce = 1
         self.order = 1
-        self.timespace = 5
 
     def makepost(self, url, **params):
         if params.get('out_order_id', None) is None:
@@ -34,15 +30,15 @@ class PrivateAPI(RequestMaker):
             self.nonce += 1
 
         req = requests.Request('POST', url=self.base_api_url+url, data=params)
-        req = req.prepare()
-        req.headers['api-sign'] = hashlib.sha256(
-            "%s%s" % (req.body, self.privkey)).hexdigest()
-        req.headers['public-key'] = self.pubkey
-        time.sleep(self.timespace)
+        prepared = req.prepare()
+        prepared.headers['api-sign'] = hashlib.sha256(
+            "%s%s" % (prepared.body, self.privkey)).hexdigest()
+        prepared.headers['public-key'] = self.pubkey
         try:
-            response = self.session.send(req)
+            response = self.sendrequest(prepared)
             #import ipdb; ipdb.set_trace()
-            print "url = '%s'\nPOST body='%s'\nHeaders = '%s'\nResponse: '%s'" % (req.url, req.body, req.headers, response.content)
+            print "url = '%s'\nPOST body='%s'\nHeaders = '%s'\nResponse: '%s'" % (
+                prepared.url, prepared.body, prepared.headers, response.content)
             try:
                 return json.loads(response.content)
             except Exception, e:
