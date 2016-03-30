@@ -13,6 +13,7 @@ def dealsfilter(func):
         return func(*args, **kwargs)
     return wrapper
 
+
 def autoordered(func):
     @wraps(func)
     def wrapper(classinstance, deal, *args, **kwargs):
@@ -20,6 +21,7 @@ def autoordered(func):
             kwargs.update(order=1)
         return func(classinstance, deal, *args, **kwargs)
     return wrapper
+
 
 def checknonce(func):
     @wraps(func)
@@ -29,3 +31,15 @@ def checknonce(func):
             classinstance.auth()
         return func(*args, **kwargs)
     return wrapper
+
+
+class answerconvertor(object):
+    def __init__(self, type_handler):
+        self.type_handler = type_handler
+
+    def __call__(self, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            return self.type_handler.parse_json(result)
+        return wrapper

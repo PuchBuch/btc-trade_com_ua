@@ -3,12 +3,14 @@
 from requestmaker import RequestMaker
 from exceptions import UnknownDeal
 from deals import DEALS
-from decorators import dealsfilter
+from types import Sells, Buyies, Deals
+from decorators import dealsfilter, answerconvertor
 
 
 class PublicAPI(RequestMaker):
 
     @dealsfilter
+    @answerconvertor(Deals)
     def deals(self, deal):
         """
         :param deal: one of the DEALS (btc_uah e.g.)
@@ -58,6 +60,7 @@ class PublicAPI(RequestMaker):
         return self.makeget('/deals/%s' % deal)
 
     @dealsfilter
+    @answerconvertor(Sells)
     def sells(self, deal):
         """
         :param deal: one of the DEALS (btc_uah e.g.)
@@ -106,6 +109,7 @@ class PublicAPI(RequestMaker):
         return self.makeget('/trades/sell/%s' % deal)
 
     @dealsfilter
+    @answerconvertor(Buyies)
     def buyies(self, deal):
         """
         :param deal: one of the DEALS (btc_uah e.g.)
