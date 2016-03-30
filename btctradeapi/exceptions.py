@@ -24,3 +24,9 @@ class ConnectionError(BaseException):
     Ошибка соединения либо внутренняя ошибка сервера
     """
     pass
+
+
+class UnknownOperationType(BaseException):
+    """
+
+    """
