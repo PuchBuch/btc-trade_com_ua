@@ -1,5 +1,11 @@
 {
-    "status": true,
-    "description": "The order has been created",
-    "oder_id": 1
+    "status": "processed",
+    "start_sum_to_buy": "0.05100000000",
+    "last_sum_to_buy": "0",
+    "description": "Your order has been fully processed successfully",
+    "__comment": {
+        "status": true,
+        "description": "The order has been created",
+        "oder_id": 1
+    }
 }

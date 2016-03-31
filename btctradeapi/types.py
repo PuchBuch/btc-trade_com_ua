@@ -76,6 +76,10 @@ def parse_OrderStatusString(data):
         return getattr(OrderStatuses, data.upper())
 
 
+def parse_ErrorDescription(json_data):
+    return dict(status=json_data['status'], description=json_data['description'])
+
+
 ParseFuncs.parse_Operation = parse_Operation
 
 
@@ -124,6 +128,11 @@ class Synonim:
 
 
 fields = {
+    'ErrorWithDescription': {
+        'status': parse_Status,
+        'description': str,
+    },
+    'Error': str,
     'DateTime': parse_DateTime,
     'Operation': parse_Operation,
     'Status': parse_Status,
@@ -334,9 +343,10 @@ def basetuple(
                     else:
                         return basetuple("Error").parse_json(json_data)
                 else:
-                    raise ValueError(repr(json_data))
+                    raise ValueError(str(json_data))
         setattr(newtuple, 'parse_json', classmethod(parser))
     else:
+        #import ipdb; ipdb.set_trace()
         raise ValueError()
     #import ipdb; ipdb.set_trace()
     return newtuple
