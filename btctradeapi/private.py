@@ -7,8 +7,9 @@ import requests
 
 from requestmaker import RequestMaker
 from exceptions import ConnectionError, ImpossibleDeal, UnknownDeal
-from decorators import dealsfilter, checknonce
+from decorators import dealsfilter, checknonce, answerconvertor
 from utils import getdeal
+import types
 
 
 class PrivateAPI(RequestMaker):
@@ -74,6 +75,7 @@ class PrivateAPI(RequestMaker):
         return self.makepost('/auth', out_order_id=1, nonce=nonce)
 
     @checknonce
+    @answerconvertor(types.Balance)
     def balance(self, order=None, nonce=None):
         """
         :param order:
@@ -139,6 +141,7 @@ class PrivateAPI(RequestMaker):
         return self.makepost('/balance', out_order_id=order, nonce=nonce)
 
     @checknonce
+    @answerconvertor(types.RequestSell)
     def sell(self, currency_from, currency_to, count, price, order=None, nonce=None):
         """
         :param currency_from:
@@ -209,6 +212,7 @@ class PrivateAPI(RequestMaker):
         return self.makepost('/sell/%s' % deal, currency1=currency_from, currency=currency_to, price=price, count=count, out_order_id=order, nonce=nonce)
 
     @checknonce
+    @answerconvertor(types.RequestBuy)
     def buy(self, currency_from, currency_to, count, price, order=None, nonce=None):
         """
         :param currency_from:
@@ -275,6 +279,7 @@ class PrivateAPI(RequestMaker):
 
     @dealsfilter
     @checknonce
+    @answerconvertor(types.OpenedOrders)
     def opened_orders(self, deal, order=None, nonce=None):
         """
         :param deal:
@@ -350,6 +355,7 @@ class PrivateAPI(RequestMaker):
         return self.makepost('/my_orders/%s' % deal, out_order_id=order, nonce=nonce)
 
     @checknonce
+    @answerconvertor(types.OrderStatus)
     def order_status(self, order_id, order=None, nonce=None):
         """
         :param order_id:
@@ -413,6 +419,7 @@ class PrivateAPI(RequestMaker):
         return self.makepost('/order/status/%s' % order_id, out_order_id=order, nonce=nonce)
 
     @checknonce
+    @answerconvertor(types.RemoveOrderStatus)
     def remove_order(self, order_id, order=None, nonce=None):
         """
         :param self:
@@ -456,6 +463,7 @@ class PrivateAPI(RequestMaker):
 
     @dealsfilter
     @checknonce
+    @answerconvertor(types.Ask)
     def get_cost_of_buying(self, deal, amount, order=None, nonce=None):
         """
         :param deal:
@@ -514,6 +522,7 @@ class PrivateAPI(RequestMaker):
 
     @dealsfilter
     @checknonce
+    @answerconvertor(types.Bid)
     def get_cost_of_selling(self, deal, amount, order=None, nonce=None):
         """
         :param deal:
