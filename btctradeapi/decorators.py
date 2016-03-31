@@ -43,3 +43,17 @@ class answerconvertor(object):
             result = func(*args, **kwargs)
             return self.type_handler.parse_json(result)
         return wrapper
+
+
+class internaltypechecker(object):
+    def __init__(self, internal_type):
+        self.type = internal_type
+
+    def __call__(self, func):
+        @wraps(func)
+        def wrapper(cls, btc_object):
+            if not isinstance(btc_object, self.type):
+                raise TypeError("btc_object argument has to be %s not %s" % (
+                    self.type, type(btc_object)))
+            return func(cls, btc_object)
+        return wrapper

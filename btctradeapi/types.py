@@ -161,6 +161,9 @@ fields = {
     },
     'BuyiesList': (list, 'BuyItem'),
 
+    'Sells': Synonim('Buyies'),
+    'SellItem': Synonim('BuyItem'),
+
     'Balance': {
         'msg_count': int,
         "accounts": (ParseFuncs, 'parse_AccountsList'),
@@ -379,7 +382,7 @@ Deal = basetuple("Deal")
 Deals = basetuple("Deals")
 
 Buyies = basetuple("Buyies")
-Sells = basetuple("Buyies")
+Sells = basetuple("Sells")
 
 Balance = basetuple("Balance")
 
