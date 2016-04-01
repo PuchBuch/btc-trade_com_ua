@@ -3,7 +3,7 @@ from btctradeapi.deals import DEALS
 from btctradeapi.exceptions import UnknownDeal
 from btctradeapi.worker import Worker
 from btctradeapi.public import PublicAPI
-from app.storage import Storage
+from app.models import CycleIterationStateSnapshot, Sell, Buy, Deal
 
 
 class InfoCollector(Worker):
@@ -14,7 +14,6 @@ class InfoCollector(Worker):
 
         super(InfoCollector, self).__init__(
             PublicAPI(),
-            Storage()
         )
         self.deal = deal
 
@@ -22,4 +21,12 @@ class InfoCollector(Worker):
     def jobcycle(self):
 
         deals = self.api.deals(self.deal)
-        self.storage.put_object()
+
+        sells = self.api.sells(self.deal)
+
+        buyies = self.api.buyies(self.deal)
+
+        snaphost=CycleIterationStateSnapshot.create(
+            deal=self.deal,
+        )
+

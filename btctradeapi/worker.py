@@ -30,7 +30,7 @@ class Worker(config.THREAD_PARENT):
         :return: str
         """
 
-    def __init__(self, api, storage, *args, **kwargs):
+    def __init__(self, api, *args, **kwargs):
         """
 
         :param api: PrivateAPI or PublicAPI instance
@@ -46,7 +46,6 @@ class Worker(config.THREAD_PARENT):
             states=self.States,
             initial=self.getinitial()
         )
-        self.storage = storage
         self._alive = True
         self.satelite = None
 
