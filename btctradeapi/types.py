@@ -159,10 +159,20 @@ fields = {
         'currency_trade': float,
         'price': float,
     },
+    'SellItem': {
+        'currency_base': float,
+        'currency_trade': float,
+        'price': float
+    },
     'BuyiesList': (list, 'BuyItem'),
-
-    'Sells': Synonim('Buyies'),
-    'SellItem': Synonim('BuyItem'),
+    'SellsList': (list, 'SellItem'),
+    'Sells': {
+        'min_price': float,
+        'max_price': float,
+        'orders_sum': float,
+        'list': 'SellsList',
+    },
+    #'SellItem': Synonim('BuyItem'),
 
     'Balance': {
         'msg_count': int,

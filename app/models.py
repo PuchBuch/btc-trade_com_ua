@@ -8,19 +8,10 @@ from btctradeapi import types
 from btctradeapi.decorators import internaltypechecker
 
 
-class OperationType(peewee.Field):
-
-    def db_value(self, value):
-        return int(value)
-
-    def python_value(self, value):
-        return int(value)
-
-
 class Convertable(object):
 
     @abstractmethod
-    @staticmethod
+    #@classmethod
     def from_type(cls, btc_object):
         """
         Creates Model from BTC internal type object
@@ -40,7 +31,13 @@ class User(BaseModel):
     name = peewee.CharField(max_length=64)
 
 
+class Deals(BaseModel):
+
+    deal = peewee.CharField(max_length=10)
+
+
 class Deal(BaseModel, Convertable):
+    deals = peewee.ForeignKeyField(Deals, null=True)
     user = peewee.ForeignKeyField(User)
 
     amnt_base = peewee.FloatField()
@@ -48,19 +45,18 @@ class Deal(BaseModel, Convertable):
 
     price = peewee.FloatField()
     pub_date = peewee.DateTimeField()
-    type = OperationType()
+    type = peewee.IntegerField()
 
     @internaltypechecker(types.Deal)
-    @staticmethod
     def from_type(cls, btc_object):
 
         return cls.create(
-            user=User.get_or_create(name=btc_object.name),
+            user=User.get_or_create(name=btc_object.user)[0],
             amnt_base=btc_object.amnt_base,
             amnt_trade=btc_object.amnt_trade,
             price=btc_object.price,
             pub_date=btc_object.pub_date,
-            type=btc_object.type
+            type=btc_object.type['int']
         )
 
 
@@ -70,7 +66,6 @@ class Buy(BaseModel, Convertable):
     orders_sum = peewee.FloatField()
 
     @internaltypechecker(types.Buyies)
-    @staticmethod
     def from_type(cls, btc_object):
         instance = cls.create(
             min_price=btc_object.min_price,
@@ -91,23 +86,6 @@ class BuyItem(BaseModel, Convertable):
     buy = peewee.ForeignKeyField(Buy, related_name="list", null=True)
 
     @internaltypechecker(types.basetuple("BuyItem"))
-    @staticmethod
-    def from_type(cls, btc_object):
-        return cls.create(
-            currency_base=btc_object.currency_base,
-            currency_trade=btc_object.currency_trade,
-            price=btc_object.price
-        )
-
-
-class SellItem(BaseModel, Convertable):
-    currency_base = peewee.FloatField()
-    currency_trade = peewee.FloatField()
-    price = peewee.FloatField()
-    buy = peewee.ForeignKeyField(Buy, related_name="list", null=True)
-
-    @internaltypechecker(types.basetuple("SellItem"))
-    @staticmethod
     def from_type(cls, btc_object):
         return cls.create(
             currency_base=btc_object.currency_base,
@@ -122,7 +100,6 @@ class Sell(BaseModel, Convertable):
     orders_sum = peewee.FloatField()
 
     @internaltypechecker(types.Sells)
-    @staticmethod
     def from_type(cls, btc_object):
         instance = cls.create(
             min_price=btc_object.min_price,
@@ -131,9 +108,24 @@ class Sell(BaseModel, Convertable):
         )
         for item in btc_object.list:
             list_item = SellItem.from_type(item)
-            list_item.buy = instance
+            list_item.sell = instance
             list_item.save()
         return instance
+
+
+class SellItem(BaseModel, Convertable):
+    currency_base = peewee.FloatField()
+    currency_trade = peewee.FloatField()
+    price = peewee.FloatField()
+    sell = peewee.ForeignKeyField(Sell, related_name="list", null=True)
+
+    @internaltypechecker(types.basetuple("SellItem"))
+    def from_type(cls, btc_object):
+        return cls.create(
+            currency_base=btc_object.currency_base,
+            currency_trade=btc_object.currency_trade,
+            price=btc_object.price
+        )
 
 
 class CycleIterationStateSnapshot(BaseModel):

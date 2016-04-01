@@ -3,8 +3,8 @@ from btctradeapi.deals import DEALS
 from btctradeapi.exceptions import UnknownDeal
 from btctradeapi.worker import Worker
 from btctradeapi.public import PublicAPI
-from app.models import CycleIterationStateSnapshot, Sell, Buy, Deal
-
+from app.models import CycleIterationStateSnapshot, Sell, Buy, Deal, Deals
+from btctradeapi.config import DB
 
 class InfoCollector(Worker):
 
@@ -17,16 +17,41 @@ class InfoCollector(Worker):
         )
         self.deal = deal
 
+    class States:
+        NewState = "NewState"
+
+    def getinitial(self):
+        return self.States.NewState
+
+    def transitions(self):
+        pass
 
     def jobcycle(self):
 
-        deals = self.api.deals(self.deal)
+        print "getting new data..."
 
-        sells = self.api.sells(self.deal)
+        try:
 
-        buyies = self.api.buyies(self.deal)
+            btc_deals = self.api.deals(self.deal)
+            btc_sells = self.api.sells(self.deal)
+            btc_buyies = self.api.buyies(self.deal)
+        except:
+            return
 
-        snaphost=CycleIterationStateSnapshot.create(
-            deal=self.deal,
-        )
+        print "new data was gotten..."
+        with DB.transaction():
+            deals = Deals.create(deal=self.deal)
 
+            snaphost=CycleIterationStateSnapshot.create(
+                deal=self.deal,
+                sells=Sell.from_type(btc_sells),
+                buyies=Buy.from_type(btc_buyies),
+                deals=deals
+            )
+
+            for index, deal in enumerate(btc_deals.items):
+                deal = Deal.from_type(deal)
+                deal.deals = deals
+                deal.save()
+
+        print "snapshot saved with timestamp %s" % snaphost.timestamp

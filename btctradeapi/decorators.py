@@ -50,9 +50,11 @@ class internaltypechecker(object):
         self.type = internal_type
 
     def __call__(self, func):
-        @wraps(func)
+        #@wraps(func)
+        @classmethod
         def wrapper(cls, btc_object):
-            if not isinstance(btc_object, self.type):
+            if not isinstance(btc_object, self.type) \
+                    and btc_object.__class__.__name__ != self.type.__name__:
                 raise TypeError("btc_object argument has to be %s not %s" % (
                     self.type, type(btc_object)))
             return func(cls, btc_object)

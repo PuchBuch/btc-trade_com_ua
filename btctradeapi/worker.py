@@ -43,9 +43,10 @@ class Worker(config.THREAD_PARENT):
         self.api = api
         self.machine = transitions.Machine(
             model=self,
-            states=self.States,
+            states=self.States.__dict__.keys(),
             initial=self.getinitial()
         )
+        self.transitions()
         self._alive = True
         self.satelite = None
 
