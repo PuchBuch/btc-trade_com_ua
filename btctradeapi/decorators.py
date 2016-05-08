@@ -1,7 +1,7 @@
 from functools import wraps
 
-from exceptions import UnknownDeal
-from deals import DEALS
+from btctradeapi.exceptions import UnknownDeal
+from btctradeapi.deals import DEALS
 
 
 def dealsfilter(func):
