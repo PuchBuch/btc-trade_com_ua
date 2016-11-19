@@ -132,7 +132,7 @@ class CycleIterationStateSnapshot(BaseModel):
 
     sells = peewee.ForeignKeyField(Sell, null=True)
     buyies = peewee.ForeignKeyField(Buy, null=True)
-    deals = peewee.ForeignKeyField(Deal, null=True)
+    deals = peewee.ForeignKeyField(Deals, null=True)
 
     deal = peewee.CharField()
     timestamp = peewee.DateTimeField(default=datetime.datetime.now)

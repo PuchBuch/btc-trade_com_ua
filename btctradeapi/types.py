@@ -1,8 +1,10 @@
+import sys
+
 from abc import abstractmethod
 from collections import namedtuple
 import datetime
 import dateparser
-from exceptions import UnknownOperationType
+from btctradeapi.exceptions import UnknownOperationType
 
 
 def to_model_func_setter(instance, func):
@@ -14,16 +16,19 @@ def parse_DateTime(str_datetime):
     try:
         return datetime.datetime.strptime(
                 str_datetime, "%Y%m%d %H:%M:%S")
-    except Exception, e:
+    except (Exception):
+        e = sys.exc_info()[1]
         #print e
         try:
             return datetime.datetime.strptime(
                 str_datetime, "%Y-%m-%d %H:%M:%S")
-        except Exception, e:
+        except (Exception):
+            e = sys.exc_info()[1]
             #print e
             try:
                 return dateparser.parse(str_datetime)
-            except Exception, e:
+            except (Exception):
+                e = sys.exc_info()[1]
                 #print e
                 import ipdb; ipdb.set_trace()
                 return dateparser.parse(unicode(str_datetime))
@@ -349,7 +354,8 @@ def basetuple(
                 return cls(**items)
                 #except:
                 #    import ipdb; ipdb.set_trace()
-            except TypeError:
+            except (TypeError):
+                e = sys.exc_info()[1]
                 if 'status' in json_data.keys():
                     if 'description' in json_data.keys():
                         return basetuple("ErrorWithDescription").parse_json(json_data)
@@ -371,8 +377,9 @@ def parse_AccountsList(json_data):
     for item in list_items:
         try:
             result.update({item.currency: item.balance})
-        except Exception, e:
-            print e
+        except (Exception):
+            e = sys.exc_info()[1]
+            print(e)
             import ipdb; ipdb.set_trace()
     result.update(accounts_list=list_items)
     Accounts = namedtuple("Accounts", " ".join(result.keys()))
