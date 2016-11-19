@@ -4,12 +4,12 @@ import json
 os.sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from peewee import SqliteDatabase, MySqlDatabase
+from peewee import SqliteDatabase, MySQLDatabase
 
 from btctradeapi import config
 try:
     fileconf = json.load(open("mysql.conf"))
-    config.DB = MySqlDatabase(fileconf['database'], user=fileconf['user'], password=fileconf["password"])
+    config.DB = MySQLDatabase(fileconf['database'], user=fileconf['user'], password=fileconf["password"])
     print "MySqlDatabase is activated"
 except Exception, e:
     print e
