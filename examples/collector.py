@@ -1,11 +1,19 @@
 import os
+import json
+
 os.sys.path.insert(
     0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from peewee import SqliteDatabase
+from peewee import SqliteDatabase, MySqlDatabase
 
 from btctradeapi import config
-config.DB = SqliteDatabase('collector.db')
+try:
+    fileconf = json.load(open("mysql.conf"))
+    config.DB = MySqlDatabase(fileconf['database'], user=fileconf['user'], password=fileconf["password"])
+    print "MySqlDatabase is activated"
+except Exception, e:
+    print e
+    config.DB = SqliteDatabase('collector.db')
 
 from workers.collector import InfoCollector
 from app.models import Deals, Deal, User, Buy, BuyItem, Sell, SellItem, CycleIterationStateSnapshot
