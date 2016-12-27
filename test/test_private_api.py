@@ -27,6 +27,7 @@ class TestPrivateAPI(unittest2.TestCase):
     #@unittest2.skip('waiting for answer in support')
     def test_sell(self):
         sell_uah_to_doge = self.api.sell(currency_from='UAH', currency_to='DOGE', count=10, price=0.0051)
+        print sell_uah_to_doge
         self.assertTrue((sell_uah_to_doge['status'] == "processed") or (sell_uah_to_doge['status'] is True))
 
     def test_buy(self):
@@ -43,7 +44,11 @@ class TestPrivateAPI(unittest2.TestCase):
 
     #@unittest2.skip('waiting for answer in support')
     def test_remove_order(self):
-        remove_order = self.api.remove_order(1)
+        sell_uah_to_doge = self.api.sell(currency_from='UAH', currency_to='DOGE', count=10, price=0.0051)
+        orders_list = self.api.opened_orders('doge_uah')
+        self.assertTrue((sell_uah_to_doge['status'] == "processed") or (sell_uah_to_doge['status'] is True))
+        print sell_uah_to_doge
+        remove_order = self.api.remove_order(orders_list["your_open_orders"][0]["id"])
         self.assertIn('status', remove_order.keys())
 
     def test_get_cost_of_buying(self):

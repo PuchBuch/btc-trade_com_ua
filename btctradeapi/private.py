@@ -452,7 +452,7 @@ class PrivateAPI(RequestMaker):
                 "status": true
             }
         """
-        return self.makepost('/order/remove/%s' % order_id, out_order_id=order, nonce=nonce)
+        return self.makepost('/remove/order/%s' % order_id, out_order_id=order, nonce=nonce)
 
     @dealsfilter
     @checknonce
